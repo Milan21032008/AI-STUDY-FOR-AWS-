@@ -1,0 +1,84 @@
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // --- GLOBAL HELPER FUNCTIONS ---
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    // Helper for Conversation access
+    function isParticipant(data) {
+      return isSignedIn() && (data.senderId == request.auth.uid || data.receiverId == request.auth.uid);
+    }
+
+    // --- COLLECTION RULES ---
+
+    match /users/{userId} {
+      // Allow any signed-in user to 'get' a profile to avoid race conditions during auth transitions.
+      allow get: if isSignedIn();
+      allow list: if isSignedIn() && request.query.limit <= 100;
+      allow create: if isSignedIn() && request.auth.uid == userId;
+      allow update: if isOwner(userId);
+      allow delete: if isOwner(userId);
+    }
+
+    match /students/{studentId} {
+      // Allow creation if the document ID matches the authenticated user's UID.
+      allow create: if isSignedIn() && request.auth.uid == studentId;
+      
+      // Allow teachers to view student profiles for communication context.
+      allow get: if isOwner(studentId) || (isSignedIn() && exists(/databases/$(database)/documents/teachers/$(request.auth.uid)));
+      allow list: if isSignedIn();
+      allow update: if isOwner(studentId);
+      allow delete: if isOwner(studentId);
+    }
+
+    match /parents/{parentId} {
+      // Allow creation if the document ID matches the authenticated user's UID.
+      allow create: if isSignedIn() && request.auth.uid == parentId;
+
+      allow get: if isOwner(parentId);
+      allow list: if isSignedIn();
+      allow update: if isOwner(parentId);
+      allow delete: if isOwner(parentId);
+    }
+
+    match /teachers/{teacherId} {
+      // Allow public access to the teacher directory so users can find educators to message.
+      allow get, list: if true;
+      
+      // Allow creation if the document ID matches the authenticated user's UID.
+      allow create: if isSignedIn() && request.auth.uid == teacherId;
+      
+      allow update: if isOwner(teacherId);
+      
+      // Permission for demo/testing purposes
+      allow delete: if isSignedIn();
+    }
+
+    match /conversations/{conversationId} {
+      // Users can only see conversations where they are either the sender or receiver.
+      allow get, list: if isParticipant(resource.data);
+      
+      // Users can create a conversation as long as they are the sender.
+      allow create: if isSignedIn() && request.resource.data.senderId == request.auth.uid;
+
+      // Allow updates for participants (e.g., adding tags or simple edits) while preserving core IDs.
+      allow update: if isParticipant(resource.data) 
+        && request.resource.data.senderId == resource.data.senderId
+        && request.resource.data.receiverId == resource.data.receiverId;
+        
+      // Allow the sender to delete their own messages.
+      allow delete: if isSignedIn() && resource.data.senderId == request.auth.uid;
+    }
+    
+    // FORCED REDEPLOY: Applying robust onboarding and messaging permission fixes.
+  }
+}

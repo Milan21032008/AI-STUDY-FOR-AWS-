@@ -1,0 +1,297 @@
+{
+  "entities": {
+    "User": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "User",
+      "type": "object",
+      "description": "Represents an authenticated user in the system, serving as the base for different roles.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the User entity."
+        },
+        "name": {
+          "type": "string",
+          "description": "The full name of the user."
+        },
+        "email": {
+          "type": "string",
+          "description": "The email address of the user, used for communication and login. (Optional)",
+          "format": "email"
+        },
+        "phone": {
+          "type": "string",
+          "description": "The phone number of the user, used for communication and login. (Optional)"
+        },
+        "role": {
+          "type": "string",
+          "description": "The assigned role of the user, determining their access and associated profile.",
+          "items": {
+            "type": "string"
+          }
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp when the user account was created.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "role",
+        "createdAt"
+      ]
+    },
+    "Student": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Student",
+      "type": "object",
+      "description": "Represents the specific profile and details for a user with the 'Child' role.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Student entity."
+        },
+        "userId": {
+          "type": "string",
+          "description": "Reference to the associated User entity. (Relationship: User 1:1 Student)"
+        },
+        "schoolName": {
+          "type": "string",
+          "description": "The name of the school the student attends."
+        },
+        "gradeClass": {
+          "type": "string",
+          "description": "The academic class or grade of the student (e.g., '7A', 'Grade 5')."
+        },
+        "parentIds": {
+          "type": "array",
+          "description": "References to Parent entities associated with this student. (Relationship: Student N:N Parent)",
+          "items": {
+            "type": "string"
+          }
+        },
+        "teacherIds": {
+          "type": "array",
+          "description": "References to Teacher entities associated with this student. (Relationship: Student N:N Teacher)",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "id",
+        "userId",
+        "schoolName",
+        "gradeClass"
+      ]
+    },
+    "Parent": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Parent",
+      "type": "object",
+      "description": "Represents the specific profile and details for a user with the 'Parent' role.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Parent entity."
+        },
+        "userId": {
+          "type": "string",
+          "description": "Reference to the associated User entity. (Relationship: User 1:1 Parent)"
+        },
+        "childIds": {
+          "type": "array",
+          "description": "References to Student entities that are children of this parent. (Relationship: Parent N:N Student)",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "id",
+        "userId"
+      ]
+    },
+    "Teacher": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Teacher",
+      "type": "object",
+      "description": "Represents the specific profile and details for a user with the 'Teacher' role.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Teacher entity."
+        },
+        "userId": {
+          "type": "string",
+          "description": "Reference to the associated User entity. (Relationship: User 1:1 Teacher)"
+        },
+        "subject": {
+          "type": "string",
+          "description": "The subject(s) taught by the teacher (e.g., 'Mathematics', 'Science')."
+        },
+        "schoolName": {
+          "type": "string",
+          "description": "The name of the school where the teacher works."
+        },
+        "contactEmail": {
+          "type": "string",
+          "description": "A specific email address for contacting the teacher. (Optional)",
+          "format": "email"
+        },
+        "contactPhone": {
+          "type": "string",
+          "description": "A specific phone number for contacting the teacher. (Optional)"
+        },
+        "availableTime": {
+          "type": "string",
+          "description": "Text describing the teacher's general availability (e.g., 'M-F 9am-3pm')."
+        },
+        "studentIds": {
+          "type": "array",
+          "description": "References to Student entities taught by this teacher. (Relationship: Teacher N:N Student)",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "id",
+        "userId",
+        "subject",
+        "schoolName"
+      ]
+    },
+    "Conversation": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Conversation",
+      "type": "object",
+      "description": "Represents a single instance of a user's message being processed, mediated by AI, and sent to a teacher.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Conversation entity."
+        },
+        "senderId": {
+          "type": "string",
+          "description": "Reference to the User who initiated this conversation. (Relationship: User 1:N Conversation)"
+        },
+        "receiverId": {
+          "type": "string",
+          "description": "Reference to the Teacher who is the intended recipient of the message. (Relationship: Teacher 1:N Conversation)"
+        },
+        "originalMessageText": {
+          "type": "string",
+          "description": "The raw, original message text provided by the sender."
+        },
+        "aiReframedMessageText": {
+          "type": "string",
+          "description": "The AI-mediated, rephrased version of the original message, designed for supportive communication."
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp when the conversation record was created.",
+          "format": "date-time"
+        },
+        "sentiment": {
+          "type": "string",
+          "description": "The sentiment detected in the original message.",
+          "items": {
+            "type": "string"
+          }
+        },
+        "detectedLanguage": {
+          "type": "string",
+          "description": "The language detected in the original message (e.g., 'en', 'hi', 'mr')."
+        },
+        "reframingExplanation": {
+          "type": "string",
+          "description": "An explanation provided by the AI regarding why and how the message was reframed. (Optional)"
+        },
+        "safetyCheckPassed": {
+          "type": "boolean",
+          "description": "Indicates whether the message passed the AI safety check."
+        },
+        "offlineStored": {
+          "type": "boolean",
+          "description": "Flag indicating if this conversation was initially stored offline and is pending synchronization with the backend."
+        }
+      },
+      "required": [
+        "id",
+        "senderId",
+        "receiverId",
+        "originalMessageText",
+        "aiReframedMessageText",
+        "createdAt",
+        "sentiment",
+        "detectedLanguage",
+        "safetyCheckPassed",
+        "offlineStored"
+      ]
+    }
+  },
+  "auth": {
+    "providers": [
+      "password",
+      "anonymous"
+    ]
+  },
+  "firestore": {
+    "structure": [
+      {
+        "path": "/users/{userId}",
+        "definition": {
+          "entityName": "User",
+          "schema": {
+            "$ref": "#/backend/entities/User"
+          },
+          "description": "Stores core user authentication and role information. The document ID `{userId}` directly corresponds to Firebase Authentication's `request.auth.uid`. All logged-in users have an entry here."
+        }
+      },
+      {
+        "path": "/students/{studentId}",
+        "definition": {
+          "entityName": "Student",
+          "schema": {
+            "$ref": "#/backend/entities/Student"
+          },
+          "description": "Stores specific profile data for users with the 'Child' role. The document ID `{studentId}` is the same as the user's `userId`. Includes `teacherIds` (an array of teacher IDs) which is a denormalized list of teachers associated with this student, crucial for authorization independence in messaging rules for students."
+        }
+      },
+      {
+        "path": "/parents/{parentId}",
+        "definition": {
+          "entityName": "Parent",
+          "schema": {
+            "$ref": "#/backend/entities/Parent"
+          },
+          "description": "Stores specific profile data for users with the 'Parent' role. The document ID `{parentId}` is the same as the user's `userId`. Includes `childIds` (an array of student IDs) and `authorizedTeacherIds` (a denormalized array of all unique teacher IDs associated with any of their children), vital for authorization independence in messaging rules for parents. `authorizedTeacherIds` should be maintained by a Cloud Function."
+        }
+      },
+      {
+        "path": "/teachers/{teacherId}",
+        "definition": {
+          "entityName": "Teacher",
+          "schema": {
+            "$ref": "#/backend/entities/Teacher"
+          },
+          "description": "Stores specific profile data and contact information for users with the 'Teacher' role. The document ID `{teacherId}` is the same as the user's `userId`. Includes `studentIds` (an array of student IDs) for easy lookup of associated students."
+        }
+      },
+      {
+        "path": "/conversations/{conversationId}",
+        "definition": {
+          "entityName": "Conversation",
+          "schema": {
+            "$ref": "#/backend/entities/Conversation"
+          },
+          "description": "Stores individual message instances, including original and AI-reframed text, timestamps, and sentiment. Includes denormalized `senderId` and `receiverId` for direct authorization. Optionally includes `relatedChildId` if the sender is a parent, providing context for the message. This structure facilitates QAPs as sender/receiver can query for their own messages directly, and rules enforce access based on these embedded IDs and the sender's role-specific teacher lists."
+        }
+      }
+    ],
+    "reasoning": "The recommended Firestore structure for SETU emphasizes Authorization Independence and Structural Segregation to ensure robust, debuggable security rules and efficient queries. It leverages path-based ownership and strategic denormalization.\n\n**Core Design Principles Implementation:**\n\n1.  **Authorization Independence (CRITICAL):** This is achieved by ensuring that all authorization decisions for a document can be made by inspecting the document itself, `request.auth.uid`, or by performing a single `get()` call to the *current user's own profile* document. This avoids problematic `get()` calls to arbitrary parent or unrelated documents.\n    *   For `User` profiles (`/users`, `/students`, `/parents`, `/teachers`), the document ID directly matches `request.auth.uid`, making ownership checks atomic and simple (`request.auth.uid == userId`).\n    *   For `Conversation` documents, `senderId` and `receiverId` are denormalized within the document, allowing direct authorization for read access (`resource.data.senderId == request.auth.uid || resource.data.receiverId == request.auth.uid`).\n    *   For message creation authorization:\n        *   **Students:** The `students/{studentId}` document includes a `teacherIds` array. Rules verify if `request.resource.data.receiverId` is present in `get(/students/$(request.auth.uid)).data.teacherIds`. This is a `get()` call on the *current user's own profile*, which is considered an acceptable method for defining user capabilities.\n        *   **Parents:** The `parents/{parentId}` document includes an `authorizedTeacherIds` array, which is a denormalized union of all teachers associated with all of the parent's children. Rules verify if `request.resource.data.receiverId` is present in `get(/parents/$(request.auth.uid)).data.authorizedTeacherIds`. This also performs a `get()` call only on the *current user's own profile*, thereby maintaining Authorization Independence.\n\n2.  **Clarity of Intent (Debuggability):** Collection names (`users`, `students`, `parents`, `teachers`, `conversations`) and wildcard parameters (`{userId}`, `{studentId}`, etc.) are highly semantic. Denormalized fields like `teacherIds` and `authorizedTeacherIds` explicitly signal their role in authorization, making security rule logic transparent and easier to debug.\n\n3.  **DBAC (No Custom Claims):** User roles are stored as a field in the `/users/{userId}` document. All role-specific attributes and relationships are stored in dedicated collections (`/students`, `/parents`, `/teachers`), with document IDs matching `request.auth.uid`. Authorization rules rely solely on `request.auth.uid` to access these database-stored roles and relationships.\n\n4.  **QAPs (Rules are not Filters):**\n    *   For listing personal messages: Users can query the `/conversations` collection using `where('senderId', '==', request.auth.uid)` or `where('receiverId', '==', request.auth.uid)`. The security rules will validate that `request.auth.uid` matches one of these fields in the returned documents, ensuring no unauthorized data is returned or filtered *by* the rules.\n    *   For listing teachers:\n        *   Students first read their own `students/{studentId}` profile to get their `teacherIds`. They then query the `/teachers` collection using `where(firebase.firestore.FieldPath.documentId(), 'in', studentProfile.teacherIds)`. Security rules for `/teachers/{teacherId}` will check if `request.auth.uid` is a student and if `request.resource.id` is in their `teacherIds` (from their own profile `get()`), thus enforcing the QAP.\n        *   Parents similarly read their `parents/{parentId}` profile to get `authorizedTeacherIds` and query `/teachers` using `where(documentId, 'in', parentProfile.authorizedTeacherIds)`. Rules will validate against the parent's `authorizedTeacherIds` (from their own profile `get()`).\n\n5.  **Invariants:** The structure supports common invariants: `createdAt` timestamps are included in `User` and `Conversation` entities. Ownership is clearly defined (e.g., `userId` as document ID, `senderId`). Denormalized fields (`teacherIds`, `authorizedTeacherIds`) are explicitly managed, typically by backend Cloud Functions, to ensure data consistency and integrity for authorization purposes.\n\n**Structural Segregation & Access Modeling:**\n\n*   **User Profiles:** Separate top-level collections (`/users`, `/students`, `/parents`, `/teachers`) are used for each user type. This creates collections with homogeneous security postures, simplifying rules. For example, a student's profile data (class, school) is separate from a teacher's contact details, even though both are 'users'.\n*   **User-Owned Data:** The primary user-centric data like profiles are directly under paths `/users/{userId}`, `/students/{studentId}`, etc., making `request.auth.uid` checks straightforward.\n*   **Collaborative Data:** `Conversation` is a collaborative entity between `senderId` and `receiverId`. Authorization context (`senderId`, `receiverId`, `relatedChildId` for parents) is denormalized into the `Conversation` document itself.\n*   **DBAC (Database-Backed Access Control):** All roles and relationships crucial for authorization are stored directly in Firestore documents, accessible via `request.auth.uid` and specific denormalized fields, eliminating the need for custom claims or complex `get()` traversals."
+  }
+}
