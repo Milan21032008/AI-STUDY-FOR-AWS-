@@ -16,6 +16,23 @@ import React, {
   useReducer,
 } from "react";
 
+/**
+ * Utility to remove undefined values from an object recursively.
+ * Firestore throws errors if it encounters 'undefined'.
+ */
+function sanitizeData(data: any): any {
+  if (Array.isArray(data)) {
+    return data.map(sanitizeData);
+  } else if (data !== null && typeof data === 'object' && !(data instanceof Date)) {
+    return Object.fromEntries(
+      Object.entries(data)
+        .filter(([_, v]) => v !== undefined)
+        .map(([k, v]) => [k, sanitizeData(v)])
+    );
+  }
+  return data;
+}
+
 type AppState = {
   userProfile: UserProfile | null;
   history: Conversation[];
@@ -212,16 +229,14 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
     }
     
     const uid = currentUser.uid;
-    const cleanProfile = Object.fromEntries(
-      Object.entries(profile).filter(([_, v]) => v !== undefined)
-    ) as UserProfile;
+    const cleanProfile = sanitizeData(profile);
 
     const userDocRef = doc(db, "users", uid);
-    const userData = {
+    const userData = sanitizeData({
       ...cleanProfile,
       id: uid,
       createdAt: new Date().toISOString(),
-    };
+    });
 
     // Non-blocking write for main user profile
     setDoc(userDocRef, userData)
@@ -270,14 +285,15 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
     }
 
     const roleDocRef = doc(db, collectionName, uid);
+    const sanitizedRoleData = sanitizeData(roleData);
     
     // Non-blocking write for role-specific data
-    setDoc(roleDocRef, roleData)
+    setDoc(roleDocRef, sanitizedRoleData)
       .catch((error) => {
         errorEmitter.emit('permission-error', new FirestorePermissionError({
           path: roleDocRef.path,
           operation: 'create',
-          requestResourceData: roleData
+          requestResourceData: sanitizedRoleData
         }));
       });
 
@@ -319,20 +335,18 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
       offlineStored: !state.isOnline,
     };
 
-    const fullConversation = Object.fromEntries(
-      Object.entries(rawConversation).filter(([_, v]) => v !== undefined)
-    ) as Conversation;
+    const sanitizedConversation = sanitizeData(rawConversation);
 
-    const convId = fullConversation.id || new Date().toISOString();
+    const convId = sanitizedConversation.id || new Date().toISOString();
     const convDocRef = doc(db, "conversations", convId);
     
     // Non-blocking write for conversations
-    setDoc(convDocRef, { ...fullConversation, id: convId })
+    setDoc(convDocRef, sanitizedConversation)
       .catch((error) => {
         errorEmitter.emit('permission-error', new FirestorePermissionError({
           path: convDocRef.path,
           operation: 'create',
-          requestResourceData: fullConversation
+          requestResourceData: sanitizedConversation
         }));
       });
 
@@ -364,19 +378,17 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
       }
     };
 
-    const cleanReply = Object.fromEntries(
-      Object.entries(reply).filter(([_, v]) => v !== undefined)
-    ) as Conversation;
+    const sanitizedReply = sanitizeData(reply);
 
     const replyDocRef = doc(db, "conversations", id);
     
     // Non-blocking write for replies
-    setDoc(replyDocRef, cleanReply)
+    setDoc(replyDocRef, sanitizedReply)
       .catch((error) => {
         errorEmitter.emit('permission-error', new FirestorePermissionError({
           path: replyDocRef.path,
           operation: 'create',
-          requestResourceData: cleanReply
+          requestResourceData: sanitizedReply
         }));
       });
   }, [user, state.userProfile, db]);
