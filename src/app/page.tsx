@@ -13,6 +13,7 @@ export default function WelcomePage() {
   const router = useRouter();
 
   useEffect(() => {
+    // If user has finished onboarding, they are logged in with a profile
     if (isOnboardingComplete) {
       router.push("/record");
     }

@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Loader2, ShieldCheck, UserCircle, Globe, Mail, Lock, KeyRound, CheckCircle2, LogIn, ArrowLeft } from "lucide-react";
+import { Loader2, ShieldCheck, UserCircle, Globe, Mail, Lock, KeyRound, CheckCircle2, LogIn } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { Role, UserProfile, TeacherProfile } from "@/lib/types";
 import { useToast } from "@/hooks/use-toast";
@@ -54,24 +54,19 @@ export const MOCK_TEACHERS: TeacherProfile[] = [
 export function OnboardingFlow() {
   const router = useRouter();
   const { toast } = useToast();
-  const { completeOnboarding, login } = useAppContext();
+  const { completeOnboarding } = useAppContext();
   
   const [step, setStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState<Partial<UserProfile & { password?: string }>>({
     language: "English",
   });
-  const [loginData, setLoginData] = useState({ identifier: "", password: "" });
   const [confirmPassword, setConfirmPassword] = useState("");
   const [otp, setOtp] = useState("");
-  const [forgotPasswordIdentifier, setForgotPasswordIdentifier] = useState("");
 
   const handleNext = () => setStep(prev => prev + 1);
   const handleBack = () => setStep(prev => prev - 1);
-  const goToLogin = () => setStep(6);
-  const goFromLoginToWelcome = () => setStep(1);
-  const goToForgotPassword = () => setStep(7);
-  const backToLogin = () => setStep(6);
+  const goToLogin = () => router.push('/login');
 
   const handleComplete = async () => {
     setIsSubmitting(true);
@@ -87,34 +82,6 @@ export function OnboardingFlow() {
     } finally {
       setIsSubmitting(false);
     }
-  };
-
-  const handleLoginSubmit = async () => {
-    setIsSubmitting(true);
-    try {
-      await login(loginData.identifier, loginData.password);
-      router.push("/record");
-    } catch (error: any) {
-      toast({
-        title: "Login Failed",
-        description: error.message || "Please check your email/phone and password.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const handleResetPassword = async () => {
-    setIsSubmitting(true);
-    setTimeout(() => {
-      setIsSubmitting(false);
-      toast({
-        title: "Reset Link Sent",
-        description: "If an account exists, you will receive a reset link shortly.",
-      });
-      setStep(6);
-    }, 1500);
   };
 
   const passwordsMatch = !!(formData.password && confirmPassword && formData.password === confirmPassword);
@@ -137,14 +104,11 @@ export function OnboardingFlow() {
     return false;
   };
 
-  const currentBackHandler = step > 1 ? (step === 6 ? goFromLoginToWelcome : step === 7 ? backToLogin : handleBack) : undefined;
-
   return (
     <div className="w-full max-w-md mx-auto py-8 space-y-8 animate-fade-in relative">
-      {/* Absolute Header for Back Button in Onboarding Steps */}
       {step > 1 && (
         <div className="absolute top-0 left-0 pt-0">
-          <BackButton onClick={currentBackHandler} />
+          <BackButton onClick={handleBack} />
         </div>
       )}
 
@@ -382,78 +346,6 @@ export function OnboardingFlow() {
                 <Button variant="ghost" className="h-12 rounded-xl" onClick={handleBack}>Back</Button>
                 <Button className="flex-1 h-12 rounded-xl font-bold shadow-xl shadow-primary/20" disabled={isSubmitting || !isFinalStepValid()} onClick={handleComplete}>
                   {isSubmitting ? <Loader2 className="animate-spin" /> : "Complete Setup"}
-                </Button>
-             </div>
-          </div>
-        )}
-
-        {step === 6 && (
-          <div className="space-y-6 flex-1 flex flex-col animate-fade-in">
-             <div className="flex items-center gap-3 mb-2">
-                <LogIn className="size-5 text-primary" />
-                <h2 className="text-xl font-black uppercase tracking-tight">Login</h2>
-             </div>
-             <div className="flex-1 space-y-6">
-                <div className="space-y-1.5">
-                  <Label className="text-[10px] font-black uppercase tracking-widest opacity-60 ml-1">Email or Phone</Label>
-                  <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground/40" />
-                    <Input 
-                      placeholder="email@school.com" 
-                      className="h-12 pl-10 rounded-xl font-semibold border-primary/10"
-                      value={loginData.identifier}
-                      onChange={(e) => setLoginData({...loginData, identifier: e.target.value})}
-                    />
-                  </div>
-                </div>
-                <div className="space-y-1.5">
-                  <div className="flex items-center justify-between">
-                    <Label className="text-[10px] font-black uppercase tracking-widest opacity-60 ml-1">Password</Label>
-                    <Button variant="link" className="h-auto p-0 text-[10px] font-bold text-primary" onClick={goToForgotPassword}>
-                      Forgot?
-                    </Button>
-                  </div>
-                  <div className="relative">
-                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground/40" />
-                    <Input 
-                      type="password"
-                      placeholder="••••••••" 
-                      className="h-12 pl-10 rounded-xl font-semibold border-primary/10"
-                      value={loginData.password}
-                      onChange={(e) => setLoginData({...loginData, password: e.target.value})}
-                    />
-                  </div>
-                </div>
-             </div>
-             <div className="flex gap-3 mt-auto pt-6 border-t border-primary/5">
-                <Button variant="ghost" className="h-12 rounded-xl font-bold" onClick={goFromLoginToWelcome}>Back</Button>
-                <Button className="flex-1 h-12 rounded-xl font-bold shadow-xl shadow-primary/20" disabled={isSubmitting || !loginData.identifier || !loginData.password} onClick={handleLoginSubmit}>
-                  {isSubmitting ? <Loader2 className="animate-spin" /> : "Login Account"}
-                </Button>
-             </div>
-          </div>
-        )}
-
-        {step === 7 && (
-          <div className="space-y-6 flex-1 flex flex-col animate-fade-in">
-             <div className="flex items-center gap-3 mb-2">
-                <KeyRound className="size-5 text-primary" />
-                <h2 className="text-xl font-black uppercase tracking-tight">Reset</h2>
-             </div>
-             <div className="flex-1 space-y-4">
-                <p className="text-xs text-muted-foreground leading-relaxed">Enter your email and we'll send a reset link.</p>
-                <div className="space-y-1.5">
-                  <Label className="text-[10px] font-black uppercase tracking-widest opacity-60 ml-1">Email</Label>
-                  <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground/40" />
-                    <Input placeholder="email@school.com" className="h-12 pl-10 rounded-xl font-semibold" value={forgotPasswordIdentifier} onChange={(e) => setForgotPasswordIdentifier(e.target.value)} />
-                  </div>
-                </div>
-             </div>
-             <div className="flex gap-3 mt-auto pt-6 border-t border-primary/5">
-                <Button variant="ghost" className="h-12 rounded-xl font-bold" onClick={backToLogin}>Back</Button>
-                <Button className="flex-1 h-12 rounded-xl font-bold" disabled={isSubmitting || !forgotPasswordIdentifier} onClick={handleResetPassword}>
-                  {isSubmitting ? <Loader2 className="animate-spin" /> : "Send Reset Link"}
                 </Button>
              </div>
           </div>

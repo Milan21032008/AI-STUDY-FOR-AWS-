@@ -1,29 +1,32 @@
+
 'use client';
 import {
-  Auth, // Import Auth type for type hinting
+  Auth,
   signInAnonymously,
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
-  // Assume getAuth and app are initialized elsewhere
 } from 'firebase/auth';
 
 /** Initiate anonymous sign-in (non-blocking). */
-export function initiateAnonymousSignIn(authInstance: Auth): void {
-  // CRITICAL: Call signInAnonymously directly. Do NOT use 'await signInAnonymously(...)'.
-  signInAnonymously(authInstance);
-  // Code continues immediately. Auth state change is handled by onAuthStateChanged listener.
+export function initiateAnonymousSignIn(authInstance: Auth, onError?: (errorMessage: string) => void): void {
+  signInAnonymously(authInstance).catch((error) => {
+    console.error("Anonymous Auth Error:", error.message);
+    if (onError) onError(error.message);
+  });
 }
 
 /** Initiate email/password sign-up (non-blocking). */
-export function initiateEmailSignUp(authInstance: Auth, email: string, password: string): void {
-  // CRITICAL: Call createUserWithEmailAndPassword directly. Do NOT use 'await createUserWithEmailAndPassword(...)'.
-  createUserWithEmailAndPassword(authInstance, email, password);
-  // Code continues immediately. Auth state change is handled by onAuthStateChanged listener.
+export function initiateEmailSignUp(authInstance: Auth, email: string, password: string, onError?: (errorMessage: string) => void): void {
+  createUserWithEmailAndPassword(authInstance, email, password).catch((error) => {
+    console.error("Sign Up Error:", error.message);
+    if (onError) onError(error.message);
+  });
 }
 
 /** Initiate email/password sign-in (non-blocking). */
-export function initiateEmailSignIn(authInstance: Auth, email: string, password: string): void {
-  // CRITICAL: Call signInWithEmailAndPassword directly. Do NOT use 'await signInWithEmailAndPassword(...)'.
-  signInWithEmailAndPassword(authInstance, email, password);
-  // Code continues immediately. Auth state change is handled by onAuthStateChanged listener.
+export function initiateEmailSignIn(authInstance: Auth, email: string, password: string, onError?: (errorMessage: string) => void): void {
+  signInWithEmailAndPassword(authInstance, email, password).catch((error) => {
+    console.error("Sign In Error:", error.message);
+    if (onError) onError(error.message);
+  });
 }
