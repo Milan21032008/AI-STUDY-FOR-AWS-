@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Loader2, ShieldCheck, UserCircle, Globe, Mail, Lock, KeyRound, CheckCircle2, LogIn } from "lucide-react";
+import { Loader2, ShieldCheck, UserCircle, Mail, Lock, CheckCircle2, KeyRound } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { Role, UserProfile, TeacherProfile } from "@/lib/types";
 import { useToast } from "@/hooks/use-toast";
@@ -62,7 +62,6 @@ export function OnboardingFlow() {
     language: "English",
   });
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [otp, setOtp] = useState("");
 
   const handleNext = () => setStep(prev => prev + 1);
   const handleBack = () => setStep(prev => prev - 1);
@@ -232,38 +231,6 @@ export function OnboardingFlow() {
         )}
 
         {step === 3 && (
-          <div className="space-y-8 flex-1 flex flex-col items-center justify-center animate-fade-in">
-             <div className="text-center space-y-4">
-                <div className="mx-auto w-16 h-16 bg-primary/5 rounded-full flex items-center justify-center mb-2">
-                    <KeyRound className="size-8 text-primary" />
-                </div>
-                <h2 className="text-2xl font-black">Verify Identity</h2>
-                <p className="text-sm text-muted-foreground px-4">
-                    We've sent a 6-digit code to your {formData.email || "device"}.
-                </p>
-             </div>
-             <div className="space-y-6 w-full max-w-[280px]">
-                <Input 
-                    placeholder="000 000" 
-                    className="h-16 text-center text-3xl font-black tracking-[0.5em] rounded-2xl bg-primary/5"
-                    maxLength={6}
-                    value={otp}
-                    onChange={(e) => setOtp(e.target.value.replace(/\D/g, ""))}
-                />
-                <div className="text-center">
-                    <Button variant="link" className="text-xs font-bold uppercase tracking-widest text-primary">Resend Code</Button>
-                </div>
-             </div>
-             <div className="flex gap-3 mt-auto w-full pt-6">
-                <Button variant="ghost" className="h-12 rounded-xl font-bold" onClick={handleBack}>Back</Button>
-                <Button className="flex-1 h-12 rounded-xl font-bold" disabled={otp.length !== 6} onClick={handleNext}>
-                    Verify & Continue
-                </Button>
-             </div>
-          </div>
-        )}
-
-        {step === 4 && (
           <div className="space-y-6 flex-1 flex flex-col animate-fade-in">
              <div className="text-center space-y-2 mb-2">
                 <h2 className="text-xl font-black uppercase tracking-tight">Select Your Role</h2>
@@ -307,7 +274,7 @@ export function OnboardingFlow() {
           </div>
         )}
 
-        {step === 5 && (
+        {step === 4 && (
           <div className="space-y-6 flex-1 animate-fade-in">
              <h2 className="text-xl font-black uppercase tracking-tight">Final Details</h2>
              <div className="space-y-4">
